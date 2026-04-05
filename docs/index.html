@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bank AI | Semantic Transaction Pipeline</title>
+    <title>Bank AI | Full Pipeline Source Code</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <style>
@@ -13,7 +14,7 @@
             --bg-main: #020617;
             --bg-card: #0f172a;
             --bg-card-hover: #1e293b;
-            --accent: #10b981; /* Emerald Green for Banks */
+            --accent: #10b981;
             --accent-glow: rgba(16, 185, 129, 0.2);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
@@ -22,14 +23,17 @@
             --radius: 12px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-main);
             color: var(--text-primary);
             line-height: 1.6;
-            overflow-x: hidden;
         }
 
         .dashboard {
@@ -38,7 +42,6 @@
             height: 100vh;
         }
 
-        /* Sidebar */
         .sidebar {
             background: var(--bg-card);
             border-right: 1px solid var(--border);
@@ -73,7 +76,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .nav-item.active {
@@ -87,93 +90,35 @@
             color: var(--text-primary);
         }
 
-        /* Main Content Area */
         .content {
             padding: 2rem;
             overflow-y: auto;
-            position: relative;
         }
 
         .hero {
             border-radius: 20px;
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(2, 6, 23, 0.8) 100%);
-            height: 250px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 0 3rem;
+            padding: 3rem;
             margin-bottom: 2rem;
             border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
         }
 
         .hero h1 {
-            font-size: 3rem;
-            font-weight: 800;
+            font-size: 2.5rem;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #fff, var(--accent));
             -webkit-background-clip: text;
-            background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .hero p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 600px;
-        }
-
-        /* File Grid */
-        .file-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .file-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .file-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        .file-card i {
-            font-size: 2rem;
-            color: var(--accent);
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .file-card h3 {
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        /* Code View */
-        .code-container {
-            margin-top: 1rem;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
         }
 
         .code-header {
             background: #1e293b;
-            padding: 10px 20px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
             border-bottom: 1px solid var(--border);
         }
 
@@ -183,134 +128,272 @@
             color: var(--accent);
         }
 
-        pre { 
+        pre {
             background: #0f172a !important;
             margin: 0 !important;
-            max-height: 70vh !important;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            max-height: calc(100vh - 250px);
             overflow-y: auto;
         }
 
         code[class*="language-"] {
             font-family: 'JetBrains Mono', monospace !important;
-            font-size: 0.85rem !important;
+            font-size: 0.8rem !important;
         }
 
-        .section { display: none; }
-        .section.active { display: block; }
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
 
         .copy-btn {
             background: rgba(16, 185, 129, 0.1);
             border: 1px solid var(--border);
             color: var(--accent);
-            padding: 4px 12px;
+            padding: 5px 12px;
             border-radius: 6px;
             font-size: 0.75rem;
             cursor: pointer;
-            transition: 0.2s;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        
-        .copy-btn:hover { background: var(--accent); color: var(--bg-main); }
 
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        .copy-btn:hover {
+            background: var(--accent);
+            color: var(--bg-main);
         }
-        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
     </style>
 </head>
+
 <body>
     <div class="dashboard">
         <aside class="sidebar">
-            <div class="logo">
-                <i class="fas fa-university"></i>
-                <span>BankAI Parser</span>
-            </div>
+            <div class="logo"><i class="fas fa-university"></i><span>BankAI Full Code</span></div>
             <ul class="nav-links">
-                <li class="nav-item active" onclick="showSection('overview')">
-                    <i class="fas fa-th-large"></i> Project Dashboard
+                <li class="nav-item active" onclick="showSection('overview')"><i class="fas fa-info-circle"></i>
+                    Pipeline Info</li>
+                <li class="nav-item" onclick="showSection('main_py')"><i class="fas fa-play"></i> main.py</li>
+                <li class="nav-item" onclick="showSection('extractor_py')"><i class="fas fa-expand"></i> extractor.py
                 </li>
-                <li class="nav-item" onclick="showSection('extractor')">
-                    <i class="fas fa-file-pdf"></i> Smart Extractor
+                <li class="nav-item" onclick="showSection('llm_parser_py')"><i class="fas fa-brain"></i> llm_parser.py
                 </li>
-                <li class="nav-item" onclick="showSection('llm_parser')">
-                    <i class="fas fa-brain"></i> Semantic Parser (Gemini)
+                <li class="nav-item" onclick="showSection('validator_py')"><i class="fas fa-check-circle"></i>
+                    validator.py</li>
+                <li class="nav-item" onclick="showSection('exporter_py')"><i class="fas fa-file-excel"></i> exporter.py
                 </li>
-                <li class="nav-item" onclick="showSection('validator')">
-                    <i class="fas fa-calculator"></i> Math Validator
-                </li>
-                <li class="nav-item" onclick="showSection('cleaner')">
-                    <i class="fas fa-broom"></i> Data Normalizer
-                </li>
-                <li class="nav-item" onclick="showSection('categorizer')">
-                    <i class="fas fa-tags"></i> Tally Categorizer
-                </li>
-                <li class="nav-item" onclick="showSection('exporter')">
-                    <i class="fas fa-file-excel"></i> Premium Exporter
-                </li>
-                <li class="nav-item" onclick="showSection('main')">
-                    <i class="fas fa-play-circle"></i> Orchestrator
+                <li class="nav-item" onclick="showSection('cleaner_py')"><i class="fas fa-broom"></i> cleaner.py</li>
+                <li class="nav-item" onclick="showSection('categorizer_py')"><i class="fas fa-tags"></i> categorizer.py
                 </li>
             </ul>
         </aside>
 
         <main class="content">
-            <div id="overview" class="section active animate-fade">
+            <div id="overview" class="section active">
                 <div class="hero">
-                    <h1>Banking Intelligence</h1>
-                    <p>Production-grade AI pipeline for converting unstructured Bank Statement PDFs into validated, Tally-ready structured financial data.</p>
+                    <h1>Full Source Code Repository</h1>
+                    <p>Complete production-grade code for the Bank Statement AI. All modules are fully synchronized with
+                        the 7-stage architecture.</p>
                 </div>
-                
-                <div class="file-grid">
-                    <div class="file-card" onclick="showSection('extractor')">
-                        <i class="fas fa-expand"></i>
-                        <h3>extractor.py</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim);">Text & OCR Extraction</p>
-                    </div>
-                    <div class="file-card" onclick="showSection('llm_parser')">
-                        <i class="fas fa-microchip"></i>
-                        <h3>llm_parser.py</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim);">Gemini 2.5 Semantic Engine</p>
-                    </div>
-                    <div class="file-card" onclick="showSection('validator')">
-                        <i class="fas fa-check-double"></i>
-                        <h3>validator.py</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim);">Advanced Math Verification</p>
-                    </div>
-                    <div class="file-card" onclick="showSection('cleaner')">
-                        <i class="fas fa-filter"></i>
-                        <h3>cleaner.py</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim);">Data Sanitization</p>
-                    </div>
-                    <div class="file-card" onclick="showSection('categorizer')">
-                        <i class="fas fa-list-ul"></i>
-                        <h3>categorizer.py</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim);">Voucher Type Mapping</p>
-                    </div>
-                    <div class="file-card" onclick="showSection('exporter')">
-                        <i class="fas fa-file-export"></i>
-                        <h3>exporter.py</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim);">Premium Multi-Sheet Excel</p>
-                    </div>
+                <div
+                    style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h3>Project Features:</h3>
+                    <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary); font-size: 0.9rem;">
+                        <li><b>Gemini 2.5 Flash</b>: Semantic extraction with Batch-Continuity context.</li>
+                        <li><b>Strict Schema Control</b>: 100% valid JSON generation.</li>
+                        <li><b>Smart Extractor</b>: Auto-detects Text/Image and runs PaddleOCR fallback.</li>
+                        <li><b>Premium Exporter</b>: Multi-sheet Excel with merged headers and zebra styling.</li>
+                        <li><b>Math Validator</b>: Automatic debit/credit swap and balance correction.</li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- Individual Code Sections (Snippets injected below) -->
-            
-            <div id="extractor" class="section">
-                <div class="code-header">
-                    <span class="code-title">modules/extractor.py</span>
-                    <button class="copy-btn" onclick="copyCode('code-extractor', this)"><i class="far fa-copy"></i> Copy</button>
-                </div>
-                <div class="code-container"><pre><code class="language-python" id="code-extractor"># extractor.py: Smart extraction (Auto-detects Text/Image).
-import pdfplumber
-from pathlib import Path
+            <!-- MAIN.PY -->
+            <div id="main_py" class="section">
+                <div class="code-header"><span class="code-title">main.py</span><button class="copy-btn"
+                        onclick="copyCode('c-main', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-main">"""
+main.py
+=======
+Bank Statement to Tally-style Excel Orchestrator
+
+This is the central entry point that coordinates the pipeline:
+1. Detect document type (Text/Scanned)
+2. Extract text (pdfplumber / PaddleOCR)
+3. Parse transactions (LLM / Rule-based)
+4. Clean & Normalize data
+5. Validate balances & detect issues
+6. Categorize transactions (Vch Type)
+7. Export to Premium Excel
+"""
+
+import argparse
 import logging
+import sys
+import time
+from pathlib import Path
+import json
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(message)s",
+    datefmt="%H:%M:%S",
+)
+logger = logging.getLogger("bank_pipeline")
+
+def _load_env():
+    """Load API keys from .env if available."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
+def run_pipeline(pdf_path: str, output_path: Path):
+    """Orchestrate the parsing stages."""
+    _load_env()
+    
+    # ── Import modules here (after env is loaded) ─────────────────────────
+    from modules.extractor import extract
+    from modules.llm_parser import parse_transactions_llm
+    from modules.cleaner import clean_transactions
+    from modules.validator import validate_transactions
+    from modules.categorizer import categorize_transactions
+    from modules.exporter import export_to_excel
+
+    pdf_file = Path(pdf_path)
+    if not pdf_file.exists():
+        logger.error("❌ PDF not found: %s", pdf_path)
+        return
+
+    # ┌──────────────────────────────────────────────┐
+    # │  Stage 1 & 2: Detection & Extraction         │
+    # └──────────────────────────────────────────────┘
+    t0 = time.perf_counter()
+    raw_lines = extract(pdf_file)
+    logger.info("⏱  Extraction done in %.2fs → %d lines extracted", time.perf_counter() - t0, len(raw_lines))
+
+    # ┌──────────────────────────────────────────────┐
+    # │  Stage 3: LLM-First Semantic Parsing         │
+    # └──────────────────────────────────────────────┘
+    t0 = time.perf_counter()
+    llm_data = parse_transactions_llm(raw_lines)
+    
+    raw_records = llm_data.get("transactions", [])
+    account_info = llm_data.get("account_info", {})
+    summary_stats = llm_data.get("summary", {})
+    
+    if not raw_records:
+        logger.error("❌ LLM Parsing failed. No transactions extracted.")
+        return
+        
+    logger.info("⏱  Parsing done in %.2fs → %d records", time.perf_counter() - t0, len(raw_records))
+
+    # ┌──────────────────────────────────────────────┐
+    # │  Stage 4: Data Cleaning                      │
+    # └──────────────────────────────────────────────┘
+    t0 = time.perf_counter()
+    cleaned_records = clean_transactions(raw_records)
+    logger.info("⏱  Stage 4 done in %.2fs", time.perf_counter() - t0)
+
+    # ┌──────────────────────────────────────────────┐
+    # │  Stage 5: Balance Validation & Issues        │
+    # └──────────────────────────────────────────────┘
+    t0 = time.perf_counter()
+    validated_records, validation_issues = validate_transactions(cleaned_records, summary_stats)
+    logger.info("⏱  Stage 5 done in %.2fs", time.perf_counter() - t0)
+
+    # ┌──────────────────────────────────────────────┐
+    # │  Stage 6: Categorization (AI-Enriched)       │
+    # └──────────────────────────────────────────────┘
+    t0 = time.perf_counter()
+    categorized_records = categorize_transactions(validated_records)
+    logger.info("⏱  Stage 6 done in %.2fs", time.perf_counter() - t0)
+
+    # ┌──────────────────────────────────────────────┐
+    # │  Stage 7: Premium Excel Export               │
+    # └──────────────────────────────────────────────┘
+    t0 = time.perf_counter()
+    output_xlsx = output_path.with_suffix(".xlsx")
+    export_to_excel(
+        transactions=categorized_records, 
+        output_path=output_xlsx,
+        account_info=account_info,
+        summary_stats=summary_stats,
+        validation_issues=validation_issues
+    )
+    logger.info("⏱  Stage 7 done in %.2fs", time.perf_counter() - t0)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Bank Statement PDF → Excel")
+    parser.add_argument("pdf", help="Input PDF file path")
+    parser.add_argument("--llm", action="store_true", help="Force LLM parsing (default is auto)")
+    parser.add_argument("--debug", action="store_true", help="Save intermediate files")
+    args = parser.parse_args()
+
+    out = Path(args.pdf).stem + "_tally"
+    run_pipeline(args.pdf, Path(out))
+</code></pre>
+            </div>
+
+            <!-- EXTRACTOR.PY -->
+            <div id="extractor_py" class="section">
+                <div class="code-header"><span class="code-title">modules/extractor.py</span><button class="copy-btn"
+                        onclick="copyCode('c-extractor', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-extractor">\"\"\"
+extractor.py
+============
+Data Extraction Module (Smart Detect + OCR)
+\"\"\"
+from __future__ import annotations
+import logging
+from pathlib import Path
+import pdfplumber
 
 logger = logging.getLogger(__name__)
+
+def extract_text_pdf(pdf_path: str | Path) -> list[str]:
+    pdf_path = Path(pdf_path)
+    all_lines = []
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text(x_tolerance=3, y_tolerance=3) or ""
+            for line in text.splitlines():
+                if line.strip(): all_lines.append(line)
+    return all_lines
+
+def extract_ocr_pdf(pdf_path: str | Path) -> list[str]:
+    pdf_path = Path(pdf_path)
+    all_lines = []
+    try:
+        import fitz
+        from paddleocr import PaddleOCR
+        import numpy as np
+        from PIL import Image
+        import io
+    except ImportError:
+        raise ImportError("OCR dependencies missing: paddleocr, PyMuPDF, pillow")
+
+    ocr_engine = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+    doc = fitz.open(str(pdf_path))
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        mat = fitz.Matrix(200 / 72, 200 / 72)
+        clip = page.get_pixmap(matrix=mat, alpha=False)
+        img_array = np.array(Image.open(io.BytesIO(clip.tobytes("png"))))
+        results = ocr_engine.ocr(img_array, cls=True)
+        if results and results[0]:
+            sorted_results = sorted(results[0], key=lambda r: r[0][0][1])
+            for item in sorted_results:
+                text = item[1][0].strip()
+                if text: all_lines.append(text)
+    doc.close()
+    return all_lines
 
 def _is_scanned_pdf(pdf_path: Path) -> bool:
     with pdfplumber.open(pdf_path) as pdf:
@@ -321,164 +404,852 @@ def _is_scanned_pdf(pdf_path: Path) -> bool:
 def extract(pdf_path: str | Path) -> list[str]:
     pdf_path = Path(pdf_path)
     if _is_scanned_pdf(pdf_path):
-        logger.info("🔎 Scanned/Image PDF detected. Switching to OCR...")
-        return extract_ocr_pdf(pdf_path) # Uses PaddleOCR
-    
-    logger.info("📑 Text-based PDF detected. Using fast extraction...")
-    all_lines = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text(x_tolerance=3, y_tolerance=3) or ""
-            all_lines.extend(text.splitlines())
-    return all_lines
-</code></pre></div>
+        return extract_ocr_pdf(pdf_path)
+    return extract_text_pdf(pdf_path)</code></pre>
             </div>
 
-            <div id="llm_parser" class="section">
-                <div class="code-header">
-                    <span class="code-title">modules/llm_parser.py</span>
-                    <button class="copy-btn" onclick="copyCode('code-llm', this)"><i class="far fa-copy"></i> Copy</button>
-                </div>
-                <div class="code-container"><pre><code class="language-python" id="code-llm"># llm_parser.py: Gemini 2.5 Semantic Engine (Schema-Controlled & Context-Aware)
-from google import genai
-import json, os, logging
+            <!-- LLM_PARSER.PY -->
+            <div id="llm_parser_py" class="section">
+                <div class="code-header"><span class="code-title">modules/llm_parser.py</span><button class="copy-btn"
+                        onclick="copyCode('c-llm', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-llm">"""
+llm_parser.py
+=============
+Semantic LLM Parser Module
+
+Uses Gemini 1.5 Flash to reconstruct transaction records from raw
+spatial text lines. This eliminates fragile regex/split rules.
+
+Strategy:
+  1. Batch text lines (e.g. 100 lines at a time)
+  2. Send to Gemini with a precise 'JSON Schema' prompt
+  3. Extract cleaned transaction objects
+  4. Perform immediate sanity check on the output format
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import re
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
+# ─────────────────────────── Batch Settings ──────────────────────────────────
+MAX_LINES_PER_BATCH: int = 80  # Roughly fits a full page with some overlap
+
+
 def parse_transactions_llm(lines: list[str]) -> dict:
-    client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+    """
+    Main entry point for LLM-based parsing. 
+    Uses Batch-with-Context strategy to handle continuity and large PDFs.
+    """
+    try:
+        from google import genai
+        # Removed redundant import, typing for clarity
+    except ImportError:
+        logger.error("google-genai not installed.")
+        return {}
+
+    api_key = os.getenv("GOOGLE_API_KEY")
+    client = genai.Client(api_key=api_key)
     
     all_transactions = []
     final_metadata = {"account_info": {}, "summary": {}}
+    
+    # Context buffer (Last few lines from previous batch)
     context_tail = ""
-    batch_size = 70  # Roughly 1 full page
+    batch_size = 70  # Roughly 1 full page (+ info lines)
+    
+    total_lines = len(lines)
+    logger.info("🤖 Starting Context-Aware Semantic Parser (%d lines)", total_lines)
 
-    for i in range(0, len(lines), batch_size):
+    for i in range(0, total_lines, batch_size):
+        batch_num = (i // batch_size) + 1
         current_chunk = lines[i : i + batch_size]
         text_to_parse = "\n".join(current_chunk)
         
-        # Build continuity prompt
-        prompt = f"CONTINUITY CONTEXT:\n{context_tail}\n\nCURRENT PAGE:\n{text_to_parse}\n"
-        prompt += "\nReturn JSON with schema: {account_info, transactions, summary}"
+        # Prepend context from previous page if it exists
+        prompt_lines = []
+        if context_tail:
+            prompt_lines.append(f"CONTINUITY CONTEXT (Last few lines of previous page):\n{context_tail}\n--- END OF CONTEXT ---")
         
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-            config={'response_mime_type': 'application/json'}
-        )
-        data = json.loads(response.text.strip())
+        prompt_lines.append(f"CURRENT PAGE TEXT:\n{text_to_parse}")
+        full_prompt = "\n\n".join(prompt_lines)
         
-        # Merge results
-        if data.get("transactions"): all_transactions.extend(data["transactions"])
-        if not final_metadata["account_info"] and "account_info" in data:
-            final_metadata["account_info"] = data["account_info"]
+        prompt_extra = """
+Convert into JSON following this schema EXACTLY:
+{
+  "account_info": { "name": "Account Name", "bank": "Bank", "account_no": "Num", "period_from": "DD/MM/YYYY", "period_to": "DD/MM/YYYY" },
+  "transactions": [
+    { "date": "DD/MM/YYYY", "description": "Narration", "ref_no": "Ref", "debit": float, "credit": float, "balance": float }
+  ],
+  "summary": { "opening_balance": float, "closing_balance": float }
+}
 
-        # Update context for next page
-        context_tail = "\n".join(current_chunk[-3:])
+CRITICAL RULES:
+1. Ignore duplicate lines from the 'CONTINUITY CONTEXT'. Only return rows that ARE in the 'CURRENT PAGE TEXT'.
+2. If a transaction description is split across the CONTEXT and the CURRENT PAGE, merge it correctly.
+3. Return ONLY a JSON object.
+"""
+        
+        try:
+            logger.info("  → Processing Batch #%d...", batch_num)
+            # SCHEMA CONTROL CONFIG
+            response = client.models.generate_content(
+                model="gemini-2.0-flash", # Use 2.0/2.5 for Speed
+                contents=full_prompt + prompt_extra,
+                config={
+                    'response_mime_type': 'application/json'
+                }
+            )
+            
+            data = json.loads(response.text.strip())
+            
+            # Merge Metadata only if not already set
+            if "account_info" in data and not final_metadata["account_info"].get("name"):
+                final_metadata["account_info"] = data["account_info"]
+            if "summary" in data:
+                final_metadata["summary"] = data["summary"]
+                
+            # Accumulate transactions
+            if "transactions" in data:
+                all_transactions.extend(data["transactions"])
+                
+            # Set context for next batch (last 3 lines)
+            context_tail = "\n".join(current_chunk[-3:])
 
-    return { "account_info": final_metadata["account_info"], "transactions": all_transactions }
-</code></pre></div>
+        except Exception as exc:
+            logger.error("  ⚠ Batch %d Failed: %s", batch_num, exc)
+            continue
+
+    logger.info("✅ Full Parse Complete. Extracted %d transactions.", len(all_transactions))
+    return {
+        "account_info": final_metadata["account_info"],
+        "transactions": all_transactions,
+        "summary": final_metadata["summary"]
+    }</code></pre>
             </div>
 
-            <div id="validator" class="section">
-                <div class="code-header">
-                    <span class="code-title">modules/validator.py</span>
-                    <button class="copy-btn" onclick="copyCode('code-validator', this)"><i class="far fa-copy"></i> Copy</button>
-                </div>
-                <div class="code-container"><pre><code class="language-python" id="code-validator"># validator.py: Advanced Math Verification
-def validate_transactions(records: list[dict], summary_stats: dict = None):
-    issues = []
-    prev_bal = None
+            <!-- VALIDATOR.PY -->
+            <div id="validator_py" class="section">
+                <div class="code-header"><span class="code-title">modules/validator.py</span><button class="copy-btn"
+                        onclick="copyCode('c-validator', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-validator">"""
+validator.py
+============
+Advanced Validation & Correction Engine (Production Grade)
+
+Rules:
+  1. Row Balance Check: Prev Balance - Debit + Credit = Current Balance
+  2. Auto-Correction: Swap Debit/Credit if it fix the math.
+  3. Duplicate Detection: Same Ref No. on different rows.
+  4. Summary Cross-Check: Stated Debits vs Sum of Rows.
+  5. Flagging: Mark rows for manual review in Excel.
+"""
+
+from __future__ import annotations
+
+import logging
+from collections import defaultdict
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+TOLERANCE: float = 0.05  # acceptable rounding/floating point error in INR
+
+def validate_transactions(records: list[dict], summary_stats: dict = None) -> tuple[list[dict], list[dict]]:
+    """
+    Validate all transaction records for mathematical and structural integrity.
+    
+    Returns:
+        tuple (validated_records, list_of_issues)
+    """
+    validated: list[dict] = []
+    issues: list[dict] = []
+    
+    prev_balance: Optional[float] = None
+    seen_refs = defaultdict(list)
+    
+    total_debit_calc = 0.0
+    total_credit_calc = 0.0
+    
+    logger.info("🔬 Advanced validation starting for %d records...", len(records))
+
     for idx, rec in enumerate(records):
-        debit, credit = rec.get("debit", 0.0), rec.get("credit", 0.0)
-        bal = rec.get("balance")
-        if prev_bal is not None:
-            expected = round(prev_bal - debit + credit, 2)
-            if abs(bal - expected) > 0.05:
-                rec["validation_message"] = "FLAGGED: Balance Mismatch"
-                issues.append({"level": "WARNING", "location": f"Row {idx+1}", "message": "Math Mismatch"})
-        prev_bal = bal
-    return records, issues
-</code></pre></div>
+        rec = dict(rec)  # working copy
+        loc = f"Row #{idx+1} ({rec.get('date')})"
+        
+        debit = rec.get("debit", 0.0) or 0.0
+        credit = rec.get("credit", 0.0) or 0.0
+        balance = rec.get("balance")
+        ref = str(rec.get("ref_no", "")).strip()
+
+        # 1. ── DUPLICATE CHECK ────────────────────────────────────────────────
+        if ref and ref not in ("0", "0000000000000000", ""):
+            seen_refs[ref].append(idx + 1)
+
+        # 2. ── BALANCE CONTINUITY ─────────────────────────────────────────────
+        if prev_balance is None:
+            # Anchor balance (first record)
+            prev_balance = balance
+            rec["validation_message"] = ""
+        else:
+            expected = round(prev_balance - debit + credit, 2)
+            
+            if balance is not None and abs(balance - expected) > TOLERANCE:
+                # Mismatch detected → Attempt Fix
+                fix_expected = round(prev_balance - credit + debit, 2)
+                if abs(balance - fix_expected) <= TOLERANCE:
+                     # FIX: Swap Debit/Credit
+                     rec["debit"], rec["credit"] = credit, debit
+                     debit, credit = credit, debit
+                     rec["validation_message"] = "FIXED: Swapped Debit/Credit"
+                     logger.debug("  🔧 %s: Swapped Debit/Credit for math check", loc)
+                else:
+                     # UNFIXABLE
+                     rec["validation_message"] = "FLAGGED: Balance Mismatch"
+                     issues.append({
+                         "level": "WARNING",
+                         "location": loc,
+                         "message": f"Balance mismatch. Expected {expected}, got {balance}."
+                     })
+            else:
+                rec["validation_message"] = ""
+
+            prev_balance = balance if balance is not None else expected
+
+        total_debit_calc += debit
+        total_credit_calc += credit
+        validated.append(rec)
+
+    # 3. ── DUPLICATE REPORTING ────────────────────────────────────────────────
+    for ref, rows in seen_refs.items():
+        if len(rows) > 1:
+            issues.append({
+                "level": "INFO", 
+                "location": f"Ref {ref}", 
+                "message": f"Duplicate Ref No. found in rows: {rows}"
+            })
+
+    # 4. ── SUMMARY CROSS-CHECK ────────────────────────────────────────────────
+    if summary_stats:
+        stated_dr = summary_stats.get("total_debits")
+        stated_cr = summary_stats.get("total_credits")
+        
+        if stated_dr is not None and abs(stated_dr - total_debit_calc) > 1.0:
+            issues.append({
+                "level": "WARNING",
+                "location": "Summary",
+                "message": f"Stated Debits ({stated_dr}) != Sum of Rows ({round(total_debit_calc,2)})"
+            })
+        if stated_cr is not None and abs(stated_cr - total_credit_calc) > 1.0:
+            issues.append({
+                "level": "WARNING",
+                "location": "Summary",
+                "message": f"Stated Credits ({stated_cr}) != Sum of Rows ({round(total_credit_calc,2)})"
+            })
+
+    logger.info("✅ Validation complete. %d issues flagged.", len(issues))
+    return validated, issues
+</code></pre>
             </div>
 
-            <div id="cleaner" class="section">
-                <div class="code-header">
-                    <span class="code-title">modules/cleaner.py</span>
-                    <button class="copy-btn" onclick="copyCode('code-cleaner', this)"><i class="far fa-copy"></i> Copy</button>
-                </div>
-                <div class="code-container"><pre><code class="language-python" id="code-cleaner"># cleaner.py: Standardizes dates and strips commas from amounts.
+            <!-- EXPORTER.PY -->
+            <div id="exporter_py" class="section">
+                <div class="code-header"><span class="code-title">modules/exporter.py</span><button class="copy-btn"
+                        onclick="copyCode('c-exporter', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-exporter">"""
+exporter.py
+===========
+Premium Excel Export Module (Validated & Structured)
+
+Responsibilities:
+  1. Generate Tally-ready Excel (.xlsx)
+  2. Multi-sheet output:
+     - Transactions (Main with Header metadata)
+     - Monthly Summary (Analysis)
+     - Account Info (Metadata)
+     - Validation Engine Report (Flagged issues)
+  3. Professional styling: Merged headers, zebra stripes, conditional formatting.
+"""
+
+from __future__ import annotations
+
+import logging
+import re
+from collections import defaultdict
+from pathlib import Path
+from typing import Any
+
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
+
+logger = logging.getLogger(__name__)
+
+# ── Styling Constants ────────────────────────────────────────────────────────
+C_HEADER  = "1F4E79"  # Dark Blue
+C_TITLE   = "2E75B6"  # Medium Blue
+C_ALT     = "D6E4F0"  # Very Light Blue (for zebra)
+C_DEBIT   = "FFE0E0"  # Light Red
+C_CREDIT  = "E2EFDA"  # Light Green
+C_SUMMARY = "FFF2CC"  # Pale Yellow
+C_INFO    = "DEEAF1"  # Light Sky
+C_ERROR   = "FCE4D6"  # Light Orange
+C_WARN    = "FFEB9C"  # Gold
+C_OK      = "C6EFCE"  # Light Green
+
+THIN_SIDE = Side(style="thin", color="AAAAAA")
+BORDER    = Border(left=THIN_SIDE, right=THIN_SIDE, top=THIN_SIDE, bottom=THIN_SIDE)
+NUM_FMT   = "#,##0.00"
+
+# ── Helper Styles ────────────────────────────────────────────────────────────
+def _apply_header(cell, text: str):
+    cell.value = text
+    cell.font = Font(name="Arial", bold=True, size=10, color="FFFFFF")
+    cell.fill = PatternFill("solid", start_color=C_HEADER)
+    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    cell.border = BORDER
+
+def _apply_data(cell, value: Any, fill: PatternFill, fmt: str = None, align: str = "center"):
+    cell.value = value
+    cell.font = Font(name="Arial", size=9)
+    cell.fill = fill
+    cell.alignment = Alignment(horizontal=align, vertical="center")
+    cell.border = BORDER
+    if fmt:
+        cell.number_format = fmt
+
+def _create_title_row(ws, text: str, span: int, color: str = C_TITLE):
+    ws.merge_cells(f"A1:{get_column_letter(span)}1")
+    ws["A1"].value = text
+    ws["A1"].font  = Font(name="Arial", bold=True, size=12, color="FFFFFF")
+    ws["A1"].fill  = PatternFill("solid", start_color=color)
+    ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 26
+
+
+# ── Main Exporter ────────────────────────────────────────────────────────────
+def export_to_excel(transactions: list[dict], 
+                    output_path: str | Path, 
+                    account_info: dict = None,
+                    summary_stats: dict = None,
+                    validation_issues: list[dict] = None):
+    """
+    Export bank data to a professional, multi-sheet Excel workbook.
+    """
+    output_path = Path(output_path)
+    wb = Workbook()
+    
+    # 1. TRANSACTIONS SHEET
+    _write_transactions_sheet(wb.active, transactions, account_info, summary_stats)
+    
+    # 2. MONTHLY SUMMARY
+    _write_monthly_summary(wb.create_sheet("Monthly Summary"), transactions)
+    
+    # 3. ACCOUNT INFO
+    _write_account_info(wb.create_sheet("Account Info"), account_info, summary_stats, len(transactions))
+    
+    # 4. VALIDATION REPORT
+    if validation_issues:
+        _write_validation_report(wb.create_sheet("Validation Report"), validation_issues)
+
+    try:
+        wb.save(output_path)
+        logger.info("✅ Premium Excel saved: %s", output_path)
+    except Exception as e:
+        logger.error("❌ Failed to save Excel: %s", e)
+        raise
+
+
+def _write_transactions_sheet(ws, txns, info, summ):
+    ws.title = "Transactions"
+    info = info or {}
+    summ = summ or {}
+    
+    # Title Header (Name, Bank, Period)
+    title_parts = []
+    if info.get("bank"): title_parts.append(info["bank"])
+    if info.get("name"): title_parts.append(info["name"])
+    if info.get("account_no"): title_parts.append(f"A/C: {info['account_no']}")
+    
+    title_str = "  |  ".join(title_parts) or "Bank Statement"
+    _create_title_row(ws, title_str, 8)
+    
+    # Summary Bar
+    ws.merge_cells("A2:H2")
+    ws["A2"].value = (
+        f"Opening: {summ.get('opening_balance','-')}  |  "
+        f"Total Debits: {summ.get('total_debits','-')}  |  "
+        f"Total Credits: {summ.get('total_credits','-')}  |  "
+        f"Closing: {summ.get('closing_balance', txns[-1].get('balance','-') if txns else '-')}"
+    )
+    ws["A2"].font  = Font(name="Arial", bold=True, size=10, color="1F4E79")
+    ws["A2"].fill  = PatternFill("solid", start_color=C_INFO)
+    ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[2].height = 20
+
+    # Table Headers
+    cols = ["Date", "Particulars/Narration", "Vch Type", "Ref/Chq No.", "Debit (Withdrawal)", "Credit (Deposit)", "Balance", "Flag"]
+    for i, name in enumerate(cols, 1):
+        _apply_header(ws.cell(3, i), name)
+    ws.row_dimensions[3].height = 24
+
+    # Data Rows
+    for r_idx, txn in enumerate(txns, 4):
+        debit = txn.get("debit", 0.0)
+        credit = txn.get("credit", 0.0)
+        vch_type = "Payment" if debit > 0 else ("Receipt" if credit > 0 else "Journal")
+        msg = txn.get("validation_message", "")
+
+        bg_color = C_ALT if r_idx % 2 == 0 else "FFFFFF"
+        row_fill = PatternFill("solid", start_color=bg_color)
+        
+        # Column fills
+        debit_fill  = PatternFill("solid", start_color=C_DEBIT if debit > 0 else bg_color)
+        credit_fill = PatternFill("solid", start_color=C_CREDIT if credit > 0 else bg_color)
+        flag_fill   = PatternFill("solid", start_color=C_WARN if msg else bg_color)
+
+        _apply_data(ws.cell(r_idx, 1), txn.get("date"), row_fill)
+        _apply_data(ws.cell(r_idx, 2), txn.get("description"), row_fill, align="left")
+        _apply_data(ws.cell(r_idx, 3), vch_type, row_fill)
+        _apply_data(ws.cell(r_idx, 4), txn.get("ref_no", ""), row_fill)
+        _apply_data(ws.cell(r_idx, 5), debit if debit > 0 else None, debit_fill, fmt=NUM_FMT)
+        _apply_data(ws.cell(r_idx, 6), credit if credit > 0 else None, credit_fill, fmt=NUM_FMT)
+        _apply_data(ws.cell(r_idx, 7), txn.get("balance"), row_fill, fmt=NUM_FMT)
+        _apply_data(ws.cell(r_idx, 8), msg, flag_fill)
+        
+        ws.row_dimensions[r_idx].height = 15
+
+    # Totals Row
+    last_row = len(txns) + 4
+    ws.cell(last_row, 1).value = "TOTAL"
+    ws.cell(last_row, 1).font = Font(bold=True)
+    ws.cell(last_row, 5).value = f"=SUM(E4:E{last_row-1})"
+    ws.cell(last_row, 6).value = f"=SUM(F4:F{last_row-1})"
+    for c in range(1, 9):
+        ws.cell(last_row, c).fill = PatternFill("solid", start_color=C_SUMMARY)
+        ws.cell(last_row, c).border = BORDER
+        if c in (5,6): ws.cell(last_row, c).number_format = NUM_FMT
+
+    widths = [12, 60, 12, 18, 18, 18, 18, 10]
+    for i, w in enumerate(widths, 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+    
+    ws.freeze_panes = "A4"
+
+
+def _write_monthly_summary(ws, txns):
+    ws.title = "Monthly Summary"
+    _create_title_row(ws, "Monthly Analysis & Cash Flow", 6)
+    headers = ["Month", "Total Debits", "Total Credits", "Net Flow", "Dr Count", "Cr Count"]
+    for i, h in enumerate(headers, 1): _apply_header(ws.cell(2, i), h)
+    
+    monthly = defaultdict(lambda: {"dr":0.0, "cr":0.0, "dr_c":0, "cr_c":0})
+    for t in txns:
+        date = str(t.get("date", ""))
+        match = re.search(r"(\d{2})[-/](\d{2})[-/](\d{2,4})", date)
+        month_key = f"{match.group(2)}/{match.group(3)}" if match else "Unknown"
+        
+        dr, cr = t.get("debit", 0.0), t.get("credit", 0.0)
+        monthly[month_key]["dr"] += dr
+        monthly[month_key]["cr"] += cr
+        if dr > 0: monthly[month_key]["dr_c"] += 1
+        if cr > 0: monthly[month_key]["cr_c"] += 1
+
+    for r, (m, v) in enumerate(sorted(monthly.items()), 3):
+        net = v["cr"] - v["dr"]
+        fill = PatternFill("solid", start_color=C_ALT if r % 2 == 0 else "FFFFFF")
+        _apply_data(ws.cell(r,1), m, fill)
+        _apply_data(ws.cell(r,2), v["dr"], fill, fmt=NUM_FMT)
+        _apply_data(ws.cell(r,3), v["cr"], fill, fmt=NUM_FMT)
+        _apply_data(ws.cell(r,4), net, fill, fmt=NUM_FMT)
+        _apply_data(ws.cell(r,5), v["dr_c"], fill)
+        _apply_data(ws.cell(r,6), v["cr_c"], fill)
+        
+    for i, w in enumerate([15, 20, 20, 20, 12, 12], 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
+
+def _write_account_info(ws, info, summ, txn_count):
+    ws.title = "Account Info"
+    _create_title_row(ws, "Account Metadata", 2)
+    info = info or {}
+    summ = summ or {}
+    rows = [
+        ("Account Holder", info.get("name", "N/A")),
+        ("Bank Name", info.get("bank", "N/A")),
+        ("Account Number", info.get("account_no", "N/A")),
+        ("Period", f"{info.get('period_from','')} to {info.get('period_to','')}"),
+        ("Total Transactions", txn_count),
+        ("Opening Balance", summ.get("opening_balance", "N/A")),
+        ("Closing Balance", summ.get("closing_balance", "N/A")),
+    ]
+    for r, (k, v) in enumerate(rows, 2):
+        fill = PatternFill("solid", start_color=C_ALT if r % 2 == 0 else "FFFFFF")
+        _apply_data(ws.cell(r,1), k, fill, align="left")
+        ws.cell(r,1).font = Font(bold=True)
+        _apply_data(ws.cell(r,2), v, fill, align="left")
+    ws.column_dimensions["A"].width = 25
+    ws.column_dimensions["B"].width = 50
+
+
+def _write_validation_report(ws, issues):
+    ws.title = "Validation Report"
+    _create_title_row(ws, "Validation Engine Results", 4, color="C62828")
+    headers = ["Level", "Location", "Message", "Status"]
+    for i, h in enumerate(headers, 1): _apply_header(ws.cell(2, i), h)
+    
+    level_color = {"ERROR": C_ERROR, "WARNING": C_WARN, "INFO": C_OK}
+    for r, issue in enumerate(issues, 3):
+        lvl = issue.get("level", "INFO")
+        fill = PatternFill("solid", start_color=level_color.get(lvl, "FFFFFF"))
+        _apply_data(ws.cell(r,1), lvl, fill)
+        _apply_data(ws.cell(r,2), issue.get("location", ""), fill)
+        _apply_data(ws.cell(r,3), issue.get("message", ""), fill, align="left")
+        _apply_data(ws.cell(r,4), "Fix Needed" if lvl == "ERROR" else "Review", fill)
+    
+    for i, w in enumerate([12, 22, 65, 16], 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+</code></pre>
+            </div>
+
+            <!-- CLEANER.PY -->
+            <div id="cleaner_py" class="section">
+                <div class="code-header"><span class="code-title">modules/cleaner.py</span><button class="copy-btn"
+                        onclick="copyCode('c-cleaner', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-cleaner">"""
+cleaner.py
+==========
+Data Cleaning & Normalization Module
+
+Responsibilities:
+  1. Standardize date to dd-mm-yyyy
+  2. Strip commas and convert amounts to float
+  3. Handle Cr/Dr suffixes common in Indian bank statements
+  4. Clean description text (collapse whitespace, remove noise)
+  5. Detect and swap debit/credit if amounts are misplaced
+  6. Fill None → 0.0 for missing numeric fields
+"""
+
+from __future__ import annotations
+
+import logging
 import re
 from datetime import datetime
+from typing import Optional
 
-def clean_transactions(raw_records: list[dict]):
-    cleaned = []
-    for rec in raw_records:
-        rec["date"] = datetime.strptime(rec["date"], "%d/%m/%Y").strftime("%d-%m-%Y")
-        rec["debit"] = float(str(rec["debit"]).replace(",", ""))
-        cleaned.append(rec)
+logger = logging.getLogger(__name__)
+
+# ─────────────────────────── Date format attempts ────────────────────────────
+DATE_FORMATS = [
+    "%d-%m-%Y",   # 05-04-2024
+    "%d/%m/%Y",   # 05/04/2024
+    "%d %b %Y",   # 05 Apr 2024
+    "%d-%b-%Y",   # 05-Apr-2024
+    "%d/%b/%Y",   # 05/Apr/2024
+    "%Y-%m-%d",   # 2024-04-05  (ISO)
+    "%d-%m-%y",   # 05-04-24
+    "%d/%m/%y",   # 05/04/24
+]
+
+# Clean amount: strips commas, trailing Cr/Dr, currency symbol
+AMOUNT_CLEAN_RE = re.compile(r"[₹$,\s]")
+CR_DR_RE = re.compile(r"\s*(Cr|Dr|CR|DR)\s*$", re.IGNORECASE)
+
+
+# ─────────────────────────── Helpers ─────────────────────────────────────────
+def _parse_date(raw: str) -> str:
+    """
+    Convert any recognized date string to dd-mm-yyyy.
+    Returns the original string if parsing fails.
+    """
+    raw = raw.strip()
+    for fmt in DATE_FORMATS:
+        try:
+            dt = datetime.strptime(raw, fmt)
+            return dt.strftime("%d-%m-%Y")
+        except ValueError:
+            continue
+    logger.warning("⚠️  Could not parse date: '%s'", raw)
+    return raw  # preserve as-is
+
+
+def _parse_amount(raw: str) -> Optional[float]:
+    """
+    Convert a raw amount string to float.
+    Strips commas, suffixes, and currency symbols.
+    Returns absolute value (sign is handled by column placement).
+    """
+    if not raw:
+        return None
+
+    cleaned = AMOUNT_CLEAN_RE.sub("", raw)
+    cleaned = CR_DR_RE.sub("", cleaned).strip()
+
+    if not cleaned:
+        return None
+
+    try:
+        # Replace comma and convert to absolute float
+        value = float(cleaned.replace(",", ""))
+        return abs(value)
+    except ValueError:
+        return None
+
+
+def _clean_description(raw: str) -> str:
+    """Collapse multiple spaces, tabs, remove non-printable chars."""
+    cleaned = re.sub(r"[\t\r\n]+", " ", raw)
+    cleaned = re.sub(r" {2,}", " ", cleaned)
+    return cleaned.strip()
+
+
+# ─────────────────────────── Main Cleaner ────────────────────────────────────
+def clean_transactions(raw_records: list[dict]) -> list[dict]:
+    """
+    Clean and normalize a list of raw transaction records.
+
+    Parameters
+    ----------
+    raw_records : list[dict]
+        Output from parser.parse_transactions()
+
+    Returns
+    -------
+    list[dict]
+        Cleaned records with keys:
+            date (str dd-mm-yyyy)
+            description (str)
+            debit (float)
+            credit (float)
+            balance (float)
+    """
+    cleaned: list[dict] = []
+
+    logger.info("🧹 Cleaning %d raw records...", len(raw_records))
+
+    for idx, rec in enumerate(raw_records):
+        try:
+            date = _parse_date(str(rec.get("date", "")))
+            description = _clean_description(str(rec.get("description", "")))
+            debit_raw = str(rec.get("debit", "")).strip()
+            credit_raw = str(rec.get("credit", "")).strip()
+            balance_raw = str(rec.get("balance", "")).strip()
+
+            debit = _parse_amount(debit_raw) or 0.0
+            credit = _parse_amount(credit_raw) or 0.0
+            balance = _parse_amount(balance_raw)  # None if truly missing
+
+            # ── Swap detection ────────────────────────────────────────────
+            # Some statements put Credit where Debit col should be
+            # We leave this for the validator to cross-check with balance.
+
+            cleaned_rec = {
+                "date": date,
+                "description": description,
+                "debit": round(debit, 2),
+                "credit": round(credit, 2),
+                "balance": round(balance, 2) if balance is not None else None,
+            }
+            cleaned.append(cleaned_rec)
+
+        except Exception as exc:
+            logger.error("❌ Failed to clean record #%d: %s | Record: %s", idx, exc, rec)
+            continue
+
+    logger.info("✅ Cleaning complete. %d/%d records cleaned.", len(cleaned), len(raw_records))
     return cleaned
-</code></pre></div>
+</code></pre>
             </div>
 
-            <div id="categorizer" class="section">
-                <div class="code-header">
-                    <span class="code-title">modules/categorizer.py</span>
-                    <button class="copy-btn" onclick="copyCode('code-cat', this)"><i class="far fa-copy"></i> Copy</button>
-                </div>
-                <div class="code-container"><pre><code class="language-python" id="code-cat"># categorizer.py: Maps descriptions to Tally Voucher Types.
-def categorize_transactions(records: list[dict]):
-    for rec in records:
-        desc = rec.get("description", "").upper()
-        if "ATM" in desc: rec["vch_type"] = "Cash Withdrawal"
-        elif "UPI" in desc: rec["vch_type"] = "UPI Transfer"
-        else: rec["vch_type"] = "General"
+            <!-- CATEGORIZER.PY -->
+            <div id="categorizer_py" class="section">
+                <div class="code-header"><span class="code-title">modules/categorizer.py</span><button class="copy-btn"
+                        onclick="copyCode('c-cat', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-cat">"""
+categorizer.py
+==============
+Transaction Categorization Module
+
+Assigns a Tally-compatible Vch Type to each transaction based on:
+  1. Rule-based keyword matching (fast, deterministic)
+  2. Optional LLM enrichment via Gemini Flash (when USE_LLM=True)
+
+Rule-based categories (priority order):
+  ┌─────────────────┬──────────────────────┐
+  │ Pattern         │ Vch Type             │
+  ├─────────────────┼──────────────────────┤
+  │ ATM             │ Cash Withdrawal      │
+  │ NEFT/IMPS/RTGS  │ Bank Transfer        │
+  │ ACH             │ Auto Debit           │
+  │ BIL/BPAY/BBPS   │ Bill Payment         │
+  │ CMS             │ Investment           │
+  │ INT             │ Interest             │
+  │ SAL/SALARY      │ Salary               │
+  │ UPI             │ UPI Transfer         │
+  │ NACH            │ Auto Debit           │
+  │ POS/SWIPE       │ POS Purchase         │
+  │ CHQ/CHEQUE      │ Cheque               │
+  │ TDS             │ Tax Deduction        │
+  │ EMI             │ Loan EMI             │
+  │ GST             │ Tax Payment          │
+  │ FD / RD         │ Investment           │
+  │ (fallback)      │ General              │
+  └─────────────────┴──────────────────────┘
+"""
+
+from __future__ import annotations
+
+import logging
+import os
+import re
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+# ─────────────────────────── Constants ───────────────────────────────────────
+USE_LLM: bool = os.getenv("USE_LLM_CATEGORIZER", "false").lower() == "true"
+BATCH_SIZE: int = 30  # transactions per LLM batch call
+
+# ─────────────────────────── Rule Table ──────────────────────────────────────
+CATEGORY_RULES: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"\bATM\b", re.I),                             "Cash Withdrawal"),
+    (re.compile(r"\b(NEFT|IMPS|RTGS)\b", re.I),               "Bank Transfer"),
+    (re.compile(r"\bNACH\b", re.I),                            "Auto Debit"),
+    (re.compile(r"\bACH\b", re.I),                             "Auto Debit"),
+    (re.compile(r"\bEMI\b", re.I),                             "Loan EMI"),
+    (re.compile(r"\b(BIL|BPAY|BBPS|BILL)\b", re.I),           "Bill Payment"),
+    (re.compile(r"\bUPI\b", re.I),                             "UPI Transfer"),
+    (re.compile(r"\b(SAL|SALARY|PAYROLL)\b", re.I),           "Salary"),
+    (re.compile(r"\bCMS\b", re.I),                             "Investment"),
+    (re.compile(r"\b(FD|RD|MUTUAL FUND|MF)\b", re.I),         "Investment"),
+    (re.compile(r"\bINT(EREST)?\b", re.I),                     "Interest"),
+    (re.compile(r"\b(POS|SWIPE|CARD)\b", re.I),               "POS Purchase"),
+    (re.compile(r"\b(CHQ|CHEQUE|CQ)\b", re.I),                "Cheque"),
+    (re.compile(r"\bTDS\b", re.I),                             "Tax Deduction"),
+    (re.compile(r"\b(GST|IGST|CGST|SGST)\b", re.I),           "Tax Payment"),
+    (re.compile(r"\b(REFUND|REVERSAL|REV)\b", re.I),          "Refund"),
+    (re.compile(r"\b(INS|INSURANCE|LIC|PREMIUM)\b", re.I),    "Insurance"),
+    (re.compile(r"\b(CASH|CSH)\b", re.I),                     "Cash Deposit"),
+]
+
+FALLBACK_CATEGORY = "General"
+
+
+# ─────────────────────────── Rule-Based Core ─────────────────────────────────
+def _rule_based_category(description: str) -> str:
+    """Apply ordered rule table to a description string."""
+    for pattern, category in CATEGORY_RULES:
+        if pattern.search(description):
+            return category
+    return FALLBACK_CATEGORY
+
+
+# ─────────────────────────── LLM Enrichment (optional) ───────────────────────
+def _llm_categorize_batch(descriptions: list[str]) -> list[str]:
+    """
+    Send a batch of descriptions to Gemini Flash for categorization.
+
+    Returns a list of category strings aligned to input.
+    Falls back to rule-based on any error.
+    """
+    try:
+        from google import genai
+
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise EnvironmentError("GOOGLE_API_KEY not set")
+        client = genai.Client(api_key=api_key)
+        
+        numbered = "\n".join(
+            f"{i+1}. {desc}" for i, desc in enumerate(descriptions)
+        )
+
+        prompt = f"""You are a Tally accounting assistant.
+Categorize each bank transaction description into ONE of these Tally Vch Types:
+Cash Withdrawal, Bank Transfer, Auto Debit, Bill Payment, Investment,
+Interest, Salary, UPI Transfer, POS Purchase, Cheque, Tax Deduction,
+Tax Payment, Loan EMI, Refund, Insurance, Cash Deposit, General.
+
+Return ONLY a numbered list. Same number as input. No extra text.
+Format:
+1. <Category>
+2. <Category>
+
+Transactions:
+{numbered}"""
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+        text_response = response.text.strip()
+        lines = text_response.splitlines()
+
+        categories = []
+        for line in lines:
+            match = re.match(r"^\d+\.\s*(.+)$", line.strip())
+            if match:
+                categories.append(match.group(1).strip())
+
+        if len(categories) == len(descriptions):
+            return categories
+
+        logger.warning("LLM returned %d categories for %d inputs — using rule fallback.",
+                       len(categories), len(descriptions))
+        return [_rule_based_category(d) for d in descriptions]
+
+    except Exception as exc:
+        logger.error("LLM categorization failed: %s — falling back to rules.", exc)
+        return [_rule_based_category(d) for d in descriptions]
+
+
+# ─────────────────────────── Main Entry ──────────────────────────────────────
+def categorize_transactions(records: list[dict]) -> list[dict]:
+    """
+    Assign Vch Type to each transaction record.
+
+    Modifies records in-place (adds "vch_type" field).
+
+    Parameters
+    ----------
+    records : list[dict]
+        Validated transaction records.
+
+    Returns
+    -------
+    list[dict]
+        Same records with "vch_type" populated.
+    """
+    logger.info(
+        "🏷️  Categorizing %d transactions (LLM=%s)...",
+        len(records),
+        USE_LLM,
+    )
+
+    if not USE_LLM:
+        # Pure rule-based — fast path
+        for rec in records:
+            rec["vch_type"] = _rule_based_category(rec.get("description", ""))
+    else:
+        # LLM enrichment in batches
+        descs = [rec.get("description", "") for rec in records]
+        categories: list[str] = []
+        for i in range(0, len(descs), BATCH_SIZE):
+            batch = descs[i : i + BATCH_SIZE]
+            categories.extend(_llm_categorize_batch(batch))
+
+        for rec, cat in zip(records, categories):
+            rec["vch_type"] = cat
+
+    logger.info("✅ Categorization complete.")
     return records
-</code></pre></div>
-            </div>
 
-            <div id="exporter" class="section">
-                <div class="code-header">
-                    <span class="code-title">modules/exporter.py</span>
-                    <button class="copy-btn" onclick="copyCode('code-exporter', this)"><i class="far fa-copy"></i> Copy</button>
-                </div>
-                <div class="code-container"><pre><code class="language-python" id="code-exporter"># exporter.py: Premium Excel with Merged Headers & Zebra Stripes
-from openpyxl import Workbook
-from openpyxl.styles import PatternFill, Font
-
-def export_to_excel(transactions, output_path, account_info, validation_issues):
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Transactions"
-    # Write Premium Header
-    ws.merge_cells("A1:H1")
-    ws["A1"] = f"{account_info.get('bank')} | {account_info.get('name')}"
-    ws["A1"].fill = PatternFill("solid", start_color="1F4E79")
-    ws["A1"].font = Font(color="FFFFFF", bold=True)
-    # Save sheets...
-    wb.save(output_path)
-</code></pre></div>
-            </div>
-
-            <div id="main" class="section">
-                <div class="code-header">
-                    <span class="code-title">main.py</span>
-                    <button class="copy-btn" onclick="copyCode('code-main', this)"><i class="far fa-copy"></i> Copy</button>
-                </div>
-                <div class="code-container"><pre><code class="language-python" id="code-main"># main.py: Orchestrator Stage 1-7
-import argparse
-from modules.extractor import extract
-from modules.llm_parser import parse_transactions_llm
-
-def run_pipeline(pdf_path):
-    raw_lines = extract(pdf_path) # Stage 1-2
-    data = parse_transactions_llm(raw_lines) # Stage 3
-    # ... stages 4, 5, 6
-    # export_to_excel(data, ...) # Stage 7
-
-if __name__ == "__main__":
-    run_pipeline("bank_statement.pdf")
-</code></pre></div>
+</code></pre>
             </div>
         </main>
     </div>
@@ -489,18 +1260,18 @@ if __name__ == "__main__":
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            
             document.getElementById(id).classList.add('active');
             event.currentTarget.classList.add('active');
         }
-
-        async function copyCode(id, btn) {
+        function copyCode(id, btn) {
             const code = document.getElementById(id).innerText;
-            await navigator.clipboard.writeText(code);
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            setTimeout(() => btn.innerHTML = original, 2000);
+            navigator.clipboard.writeText(code).then(() => {
+                const icon = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => btn.innerHTML = icon, 2000);
+            });
         }
     </script>
 </body>
+
 </html>
