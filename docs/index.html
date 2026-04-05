@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank AI | Semantic Transaction Pipeline</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg-main: #020617;
+            --bg-card: #0f172a;
+            --bg-card-hover: #1e293b;
+            --accent: #10b981; /* Emerald Green for Banks */
+            --accent-glow: rgba(16, 185, 129, 0.2);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --border: rgba(255, 255, 255, 0.1);
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+
+        .nav-item.active {
+            background: var(--bg-card-hover);
+            color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .nav-item:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        /* Main Content Area */
+        .content {
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .hero {
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(2, 6, 23, 0.8) 100%);
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 3rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+        }
+
+        /* File Grid */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .file-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .file-card i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .file-card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Code View */
+        .code-container {
+            margin-top: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .code-header {
+            background: #1e293b;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        pre { 
+            background: #0f172a !important;
+            margin: 0 !important;
+            max-height: 70vh !important;
+            overflow-y: auto;
+        }
+
+        code[class*="language-"] {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 0.85rem !important;
+        }
+
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .copy-btn {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .copy-btn:hover { background: var(--accent); color: var(--bg-main); }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-university"></i>
+                <span>BankAI Parser</span>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active" onclick="showSection('overview')">
+                    <i class="fas fa-th-large"></i> Project Dashboard
+                </li>
+                <li class="nav-item" onclick="showSection('extractor')">
+                    <i class="fas fa-file-pdf"></i> Smart Extractor
+                </li>
+                <li class="nav-item" onclick="showSection('llm_parser')">
+                    <i class="fas fa-brain"></i> Semantic Parser (Gemini)
+                </li>
+                <li class="nav-item" onclick="showSection('validator')">
+                    <i class="fas fa-calculator"></i> Math Validator
+                </li>
+                <li class="nav-item" onclick="showSection('cleaner')">
+                    <i class="fas fa-broom"></i> Data Normalizer
+                </li>
+                <li class="nav-item" onclick="showSection('categorizer')">
+                    <i class="fas fa-tags"></i> Tally Categorizer
+                </li>
+                <li class="nav-item" onclick="showSection('exporter')">
+                    <i class="fas fa-file-excel"></i> Premium Exporter
+                </li>
+                <li class="nav-item" onclick="showSection('main')">
+                    <i class="fas fa-play-circle"></i> Orchestrator
+                </li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div id="overview" class="section active animate-fade">
+                <div class="hero">
+                    <h1>Banking Intelligence</h1>
+                    <p>Production-grade AI pipeline for converting unstructured Bank Statement PDFs into validated, Tally-ready structured financial data.</p>
+                </div>
+                
+                <div class="file-grid">
+                    <div class="file-card" onclick="showSection('extractor')">
+                        <i class="fas fa-expand"></i>
+                        <h3>extractor.py</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim);">Text & OCR Extraction</p>
+                    </div>
+                    <div class="file-card" onclick="showSection('llm_parser')">
+                        <i class="fas fa-microchip"></i>
+                        <h3>llm_parser.py</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim);">Gemini 2.5 Semantic Engine</p>
+                    </div>
+                    <div class="file-card" onclick="showSection('validator')">
+                        <i class="fas fa-check-double"></i>
+                        <h3>validator.py</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim);">Advanced Math Verification</p>
+                    </div>
+                    <div class="file-card" onclick="showSection('cleaner')">
+                        <i class="fas fa-filter"></i>
+                        <h3>cleaner.py</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim);">Data Sanitization</p>
+                    </div>
+                    <div class="file-card" onclick="showSection('categorizer')">
+                        <i class="fas fa-list-ul"></i>
+                        <h3>categorizer.py</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim);">Voucher Type Mapping</p>
+                    </div>
+                    <div class="file-card" onclick="showSection('exporter')">
+                        <i class="fas fa-file-export"></i>
+                        <h3>exporter.py</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim);">Premium Multi-Sheet Excel</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Individual Code Sections (Snippets injected below) -->
+            
+            <div id="extractor" class="section">
+                <div class="code-header">
+                    <span class="code-title">modules/extractor.py</span>
+                    <button class="copy-btn" onclick="copyCode('code-extractor', this)"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-container"><pre><code class="language-python" id="code-extractor"># extractor.py: Smart extraction (Auto-detects Text/Image).
+import pdfplumber
+from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
+
+def _is_scanned_pdf(pdf_path: Path) -> bool:
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            if page.chars: return False
+    return True
+
+def extract(pdf_path: str | Path) -> list[str]:
+    pdf_path = Path(pdf_path)
+    if _is_scanned_pdf(pdf_path):
+        logger.info("🔎 Scanned/Image PDF detected. Switching to OCR...")
+        return extract_ocr_pdf(pdf_path) # Uses PaddleOCR
+    
+    logger.info("📑 Text-based PDF detected. Using fast extraction...")
+    all_lines = []
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text(x_tolerance=3, y_tolerance=3) or ""
+            all_lines.extend(text.splitlines())
+    return all_lines
+</code></pre></div>
+            </div>
+
+            <div id="llm_parser" class="section">
+                <div class="code-header">
+                    <span class="code-title">modules/llm_parser.py</span>
+                    <button class="copy-btn" onclick="copyCode('code-llm', this)"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-container"><pre><code class="language-python" id="code-llm"># llm_parser.py: Gemini 2.5 Semantic Engine (Schema-Controlled & Context-Aware)
+from google import genai
+import json, os, logging
+
+logger = logging.getLogger(__name__)
+
+def parse_transactions_llm(lines: list[str]) -> dict:
+    client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+    
+    all_transactions = []
+    final_metadata = {"account_info": {}, "summary": {}}
+    context_tail = ""
+    batch_size = 70  # Roughly 1 full page
+
+    for i in range(0, len(lines), batch_size):
+        current_chunk = lines[i : i + batch_size]
+        text_to_parse = "\n".join(current_chunk)
+        
+        # Build continuity prompt
+        prompt = f"CONTINUITY CONTEXT:\n{context_tail}\n\nCURRENT PAGE:\n{text_to_parse}\n"
+        prompt += "\nReturn JSON with schema: {account_info, transactions, summary}"
+        
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config={'response_mime_type': 'application/json'}
+        )
+        data = json.loads(response.text.strip())
+        
+        # Merge results
+        if data.get("transactions"): all_transactions.extend(data["transactions"])
+        if not final_metadata["account_info"] and "account_info" in data:
+            final_metadata["account_info"] = data["account_info"]
+
+        # Update context for next page
+        context_tail = "\n".join(current_chunk[-3:])
+
+    return { "account_info": final_metadata["account_info"], "transactions": all_transactions }
+</code></pre></div>
+            </div>
+
+            <div id="validator" class="section">
+                <div class="code-header">
+                    <span class="code-title">modules/validator.py</span>
+                    <button class="copy-btn" onclick="copyCode('code-validator', this)"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-container"><pre><code class="language-python" id="code-validator"># validator.py: Advanced Math Verification
+def validate_transactions(records: list[dict], summary_stats: dict = None):
+    issues = []
+    prev_bal = None
+    for idx, rec in enumerate(records):
+        debit, credit = rec.get("debit", 0.0), rec.get("credit", 0.0)
+        bal = rec.get("balance")
+        if prev_bal is not None:
+            expected = round(prev_bal - debit + credit, 2)
+            if abs(bal - expected) > 0.05:
+                rec["validation_message"] = "FLAGGED: Balance Mismatch"
+                issues.append({"level": "WARNING", "location": f"Row {idx+1}", "message": "Math Mismatch"})
+        prev_bal = bal
+    return records, issues
+</code></pre></div>
+            </div>
+
+            <div id="cleaner" class="section">
+                <div class="code-header">
+                    <span class="code-title">modules/cleaner.py</span>
+                    <button class="copy-btn" onclick="copyCode('code-cleaner', this)"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-container"><pre><code class="language-python" id="code-cleaner"># cleaner.py: Standardizes dates and strips commas from amounts.
+import re
+from datetime import datetime
+
+def clean_transactions(raw_records: list[dict]):
+    cleaned = []
+    for rec in raw_records:
+        rec["date"] = datetime.strptime(rec["date"], "%d/%m/%Y").strftime("%d-%m-%Y")
+        rec["debit"] = float(str(rec["debit"]).replace(",", ""))
+        cleaned.append(rec)
+    return cleaned
+</code></pre></div>
+            </div>
+
+            <div id="categorizer" class="section">
+                <div class="code-header">
+                    <span class="code-title">modules/categorizer.py</span>
+                    <button class="copy-btn" onclick="copyCode('code-cat', this)"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-container"><pre><code class="language-python" id="code-cat"># categorizer.py: Maps descriptions to Tally Voucher Types.
+def categorize_transactions(records: list[dict]):
+    for rec in records:
+        desc = rec.get("description", "").upper()
+        if "ATM" in desc: rec["vch_type"] = "Cash Withdrawal"
+        elif "UPI" in desc: rec["vch_type"] = "UPI Transfer"
+        else: rec["vch_type"] = "General"
+    return records
+</code></pre></div>
+            </div>
+
+            <div id="exporter" class="section">
+                <div class="code-header">
+                    <span class="code-title">modules/exporter.py</span>
+                    <button class="copy-btn" onclick="copyCode('code-exporter', this)"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-container"><pre><code class="language-python" id="code-exporter"># exporter.py: Premium Excel with Merged Headers & Zebra Stripes
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Font
+
+def export_to_excel(transactions, output_path, account_info, validation_issues):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Transactions"
+    # Write Premium Header
+    ws.merge_cells("A1:H1")
+    ws["A1"] = f"{account_info.get('bank')} | {account_info.get('name')}"
+    ws["A1"].fill = PatternFill("solid", start_color="1F4E79")
+    ws["A1"].font = Font(color="FFFFFF", bold=True)
+    # Save sheets...
+    wb.save(output_path)
+</code></pre></div>
+            </div>
+
+            <div id="main" class="section">
+                <div class="code-header">
+                    <span class="code-title">main.py</span>
+                    <button class="copy-btn" onclick="copyCode('code-main', this)"><i class="far fa-copy"></i> Copy</button>
+                </div>
+                <div class="code-container"><pre><code class="language-python" id="code-main"># main.py: Orchestrator Stage 1-7
+import argparse
+from modules.extractor import extract
+from modules.llm_parser import parse_transactions_llm
+
+def run_pipeline(pdf_path):
+    raw_lines = extract(pdf_path) # Stage 1-2
+    data = parse_transactions_llm(raw_lines) # Stage 3
+    # ... stages 4, 5, 6
+    # export_to_excel(data, ...) # Stage 7
+
+if __name__ == "__main__":
+    run_pipeline("bank_statement.pdf")
+</code></pre></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script>
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        async function copyCode(id, btn) {
+            const code = document.getElementById(id).innerText;
+            await navigator.clipboard.writeText(code);
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => btn.innerHTML = original, 2000);
+        }
+    </script>
+</body>
+</html>
