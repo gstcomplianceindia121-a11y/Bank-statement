@@ -189,6 +189,7 @@
                 <li class="nav-item" onclick="showSection('cleaner_py')"><i class="fas fa-broom"></i> cleaner.py</li>
                 <li class="nav-item" onclick="showSection('categorizer_py')"><i class="fas fa-tags"></i> categorizer.py
                 </li>
+                <li class="nav-item" onclick="showSection('langchain_app_py')"><i class="fas fa-link"></i> langchain_app.py</li>
             </ul>
         </aside>
 
@@ -208,6 +209,7 @@
                         <li><b>Smart Extractor</b>: Auto-detects Text/Image and runs PaddleOCR fallback.</li>
                         <li><b>Premium Exporter</b>: Multi-sheet Excel with merged headers and zebra styling.</li>
                         <li><b>Math Validator</b>: Automatic debit/credit swap and balance correction.</li>
+                        <li><b>LangChain LCEL</b>: Advanced orchestration with traceable components and structured outputs.</li>
                     </ul>
                 </div>
             </div>
@@ -1401,6 +1403,180 @@ def categorize_transactions(records: list[dict]) -> list[dict]:
     logger.info("✅ Categorization complete.")
     return records
 
+</code></pre>
+            </div>
+            <!-- LANGCHAIN_APP.PY -->
+            <div id="langchain_app_py" class="section">
+                <div class="code-header"><span class="code-title">langchain_app.py</span><button class="copy-btn"
+                        onclick="copyCode('c-langchain', this)"><i class="far fa-copy"></i> Copy</button></div>
+                <pre><code class="language-python" id="c-langchain">"""
+langchain_app.py
+================
+LangChain-Powered Bank Statement Orchestrator
+
+This module reimplements the bank statement parsing pipeline using LangChain LCEL.
+It provides a robust, modular, and traceable chain for processing financial documents.
+"""
+
+import os
+import logging
+import time
+from pathlib import Path
+from typing import List, Dict, Any
+
+from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableLambda
+from pydantic import BaseModel, Field
+
+# Import existing specialized modules
+from modules.extractor import extract
+from modules.cleaner import clean_transactions
+from modules.validator import validate_transactions
+from modules.categorizer import categorize_transactions
+from modules.exporter import export_to_excel
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger("LangChainBankApp")
+
+# ── Data Schemas (Reusing existing structures) ────────────────────────────────
+
+class AccountInfo(BaseModel):
+    name: str = Field(description="Name of the account holder", default="Unknown")
+    bank: str = Field(description="Name of the bank", default="Unknown")
+    account_no: str = Field(description="Bank account number", default="Unknown")
+    period_from: str = Field(description="Start date", default="Unknown")
+    period_to: str = Field(description="End date", default="Unknown")
+
+class Transaction(BaseModel):
+    date: str = Field(description="Transaction date")
+    description: str = Field(description="Full narration")
+    ref_no: str = Field(description="Reference/Cheque number", default="")
+    debit: float = Field(description="Debit amount", default=0.0)
+    credit: float = Field(description="Credit amount", default=0.0)
+    balance: float = Field(description="Running balance", default=0.0)
+
+class Summary(BaseModel):
+    opening_balance: float = Field(description="Statement opening balance", default=0.0)
+    closing_balance: float = Field(description="Statement closing balance", default=0.0)
+
+class ExtractedData(BaseModel):
+    account_info: AccountInfo
+    transactions: List[Transaction]
+    summary: Summary
+
+# ── LangChain Components ──────────────────────────────────────────────────────
+
+def get_parser_chain():
+    """Builds the LangChain parsing chain."""
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-1.5-pro",
+        temperature=0,
+        max_retries=2,
+    )
+    
+    # Use structured output for guaranteed schema compliance
+    structured_llm = llm.with_structured_output(ExtractedData)
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "You are a specialized financial parser. Extract bank statement data into the provided schema. "
+            "Merge multi-line descriptions. If a row lacks a date, it belongs to the previous transaction. "
+            "Handle overlap context to avoid duplicates."
+        )),
+        ("human", "--- PREVIOUS CONTEXT ---\n{context}\n\n--- TARGET TEXT ---\n{text}")
+    ])
+    
+    return prompt | structured_llm
+
+def parse_with_langchain(lines: List[str]) -> Dict[str, Any]:
+    """Processes extracted text lines in batches using LangChain."""
+    chain = get_parser_chain()
+    
+    all_transactions = []
+    final_metadata = {"account_info": {}, "summary": {}}
+    context_tail = ""
+    batch_size = 80
+    
+    for i in range(0, len(lines), batch_size):
+        chunk = lines[i : i + batch_size]
+        text = "\n".join(chunk)
+        
+        logger.info(f"Processing batch {i//batch_size + 1}...")
+        
+        try:
+            result = chain.invoke({"context": context_tail, "text": text})
+            
+            # Aggregate data
+            all_transactions.extend([t.dict() for t in result.transactions])
+            
+            # Update metadata if found
+            if result.account_info.name != "Unknown":
+                final_metadata["account_info"] = result.account_info.dict()
+            if result.summary.opening_balance != 0.0:
+                final_metadata["summary"] = result.summary.dict()
+                
+            # Set context for next batch
+            context_tail = "\n".join(chunk[-5:])
+            
+        except Exception as e:
+            logger.error(f"Error in batch {i//batch_size + 1}: {e}")
+            
+    return {
+        "transactions": all_transactions,
+        "account_info": final_metadata.get("account_info", {}),
+        "summary": final_metadata.get("summary", {})
+    }
+
+# ── Main Pipeline ─────────────────────────────────────────────────────────────
+
+def run_app(pdf_path: str):
+    """Main application flow."""
+    load_dotenv()
+    
+    t_start = time.perf_counter()
+    pdf_file = Path(pdf_path)
+    
+    # 1. Extraction (Native)
+    logger.info("Stage 1: Extracting text...")
+    raw_lines = extract(pdf_file)
+    
+    # 2. Parsing (LangChain)
+    logger.info("Stage 2: Semantic Parsing via LangChain...")
+    parsed_data = parse_with_langchain(raw_lines)
+    
+    # 3. Business Logic (Native)
+    logger.info("Stage 3-6: Cleaning, Validating, Categorizing...")
+    cleaned = clean_transactions(parsed_data["transactions"])
+    validated, issues = validate_transactions(cleaned, parsed_data["summary"])
+    categorized = categorize_transactions(validated)
+    
+    # 4. Export (Native)
+    logger.info("Stage 7: Exporting to Excel...")
+    output_path = pdf_file.stem + "_langchain_output.xlsx"
+    export_to_excel(
+        transactions=categorized,
+        output_path=Path(output_path),
+        account_info=parsed_data["account_info"],
+        summary_stats=parsed_data["summary"],
+        validation_issues=issues
+    )
+    
+    duration = time.perf_counter() - t_start
+    logger.info(f"✅ Success! Integrated LangChain Pipeline completed in {duration:.2f}s")
+    logger.info(f"📊 Result saved to: {output_path}")
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) < 2:
+        print("Usage: python langchain_app.py <path_to_pdf>")
+    else:
+        run_app(sys.argv[1])
 </code></pre>
             </div>
         </main>
